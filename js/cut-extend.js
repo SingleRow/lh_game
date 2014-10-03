@@ -118,20 +118,21 @@ Cut.prototype.insertAfter = function(prev) {
 
 
 Cut.View=function(){
+	//视窗类，超出视窗的部分不显示
     Cut.View.prototype._super.apply(this,arguments);
 };
 Cut.View.prototype = Cut._create(Cut.Image.prototype);
 Cut.View.prototype._super = Cut.Image;
 Cut.View.prototype.constructor = Cut.View;
 Cut.view = function(w,h) {
+	//建立视窗，指定宽度、高度
     var view=new Cut.View();
     view.image(Cut.Out.drawing(w,h,1,function(context,ratio){
         context.rect(0,0,w,h);
     }));
     return view;
 };
-
-Cut.prototype._paint = function(context) {
+Cut.View.prototype._paint = function(context) {
     if (!this._visible) {
         return;
     }
@@ -147,31 +148,23 @@ Cut.prototype._paint = function(context) {
         context.globalAlpha = alpha;
     }
 
-    if (this instanceof Cut.View){
-        var box= this._cutouts[0];
-        context.save();
-        context.beginPath();
-        context.rect(box._sx,box._sy,box._sw,box._sh);
+    var box= this._cutouts[0];
+    context.save();
+    context.beginPath();
+    context.rect(box._sx,box._sy,box._sw,box._sh);
+    context.clip();
 
-        context.clip();
-
-    }else{
-        var length = this._cutouts.length;
-        for (var i = 0; i < length; i++) {
-            this._cutouts[i].paste(context);
-        }
-    }
     if (context.globalAlpha != this._alpha) {
         context.globalAlpha = this._alpha;
     }
+
     var child, next = this._first;
     while (child = next) {
         next = child._next;
         child._paint(context);
     }
-    if (this instanceof Cut.View){
-        context.restore();
-    }
+    
+    context.restore();
 };
 
 Cut.text = function(font) {
@@ -244,6 +237,7 @@ Cut.Char.prototype.setChar = function(value,font) {
 
     return this;
 };
+
 Cut.Out.prototype.paste = function(context) {
     Cut._stats.paste++;
     if (this._font){
@@ -256,9 +250,9 @@ Cut.Out.prototype.paste = function(context) {
             context.strokeText(this.name,this._dx,this._dy+font.size/2);
         }
         context.fillStyle=font.color;
-        context.fillText(this.name,this._dx,this._dy+font.size/2);
+        context.fillText(this._name,this._dx,this._dy+font.size/2);
     }else{
-        var img = this._image();
+        var img = typeof this._image === 'function' ? this._image() : this._image;
         try {
             img && context.drawImage(img, // source
                 this._sx, this._sy, this._sw, this._sh, // cut
@@ -266,10 +260,9 @@ Cut.Out.prototype.paste = function(context) {
             );
         } catch (e) {
             if (!this.failed) {
-                console.log("Unable to paste: ", this._sx, this._sy, this._sw, this._sh,
-                    this._dx, this._dy, this._dw, this._dh, img);
+                console.log('Unable to paste: ' + this, img);
+            	this._failed = true;
             }
-            this.failed = true;
         }
     }
 };

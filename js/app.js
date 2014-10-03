@@ -7,12 +7,20 @@ Cut(function(root, container ) {
     var sound={};
     var font={};
     var style={};
+    
+    font.btn={color:"#000",size:50};
 
     ui.center=Cut.image("base:color_dark").pin({"align":0.5}).appendTo(root);
     ui.tl=Cut.image("base:color_dark").pin({"align":0}).appendTo(root);
     ui.br=Cut.image("base:color_dark").pin({"align":1}).appendTo(root);
     ui.tr=Cut.image("base:color_dark").pin({"alignX":1,"alignY":0}).appendTo(root);
     ui.bl=Cut.image("base:color_dark").pin({"alignX":0,"alignY":1}).appendTo(root);
+    
+	ui.w1=Cut.view(100,200).pin({align:0.5}).appendTo(root);
+    ui.yellow=Cut.image("base:color_yellow").pin({align:0.5,scale:20,alpha:0.2}).appendTo(root);
+    ui.red=Cut.image("base:color_red").pin({align:0.5,scale:20,alpha:0.8}).appendTo(ui.w1);
+    
+    ui.t1=Cut.text(font.btn).pin({"alignX":0,"alignY":0}).setValue("暂停").spacing(10).appendTo(ui.w1);
 });
 
 Cut({
